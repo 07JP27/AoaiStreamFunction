@@ -33,7 +33,7 @@ namespace AoaiStreamFunction
             response.Headers.Add(HeaderNames.ContentType, "text/event-stream");
             response.Headers.Add(HeaderNames.CacheControl, CacheControlHeaderValue.NoCacheString);
             string dataformat = "data: {0}\r\n\r\n";
-            await foreach (StreamingChatCompletionsUpdate chatUpdate in client.GetChatCompletionsStreaming(chatOptions))
+            await foreach (StreamingChatCompletionsUpdate chatUpdate in await client.GetChatCompletionsStreamingAsync(chatOptions))
             {
                 log.LogInformation(chatUpdate.ContentUpdate);
                 await response.WriteAsync(string.Format(dataformat, chatUpdate.ContentUpdate));
