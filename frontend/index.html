@@ -7,73 +7,82 @@
     <title>Document</title>
 </head>
 <body>
-    <input type="button" onclick="btnclick()" value="click">
-    <input type="button" onclick="test()" value="test">
-    
+    <div style="margin-bottom: 5px;">
+        <input type="textbox" id="user-message" style='width: 80%;'>    
+        <input type="button" onclick="btnclick()" value="送信" style='width: 10%;'>    
+    </div>
+    <div id="chat-area">
+        <div id="chat-history">You are an AI assistant.</div>
+        <div id="assistant-temp-message"></div>
+    </div>
+
+
     <script>
+        // 最初にmessagesを大域変数として定義
+        let messages = [
+            {
+                "content": "You are an AI assistant.",
+                "role": "system"
+            }
+        ];
+        updateHistory();
+
         async function btnclick() {
-            // http://localhost:7071/api/chatstreamへリクエストしてSSEを受信する
-            const res = await fetch("http://localhost:7071/api/chat-stream", {
+            // user-messageの入力内容をmessagesに追加
+            messages.push({
+                "content": document.getElementById("user-message").value,
+                "role": "user"
+            });
+            updateHistory();
+            document.getElementById("user-message").value = "";
+            const res = await fetch("http://localhost:7221/api/chat-stream", {
                 headers: {
                     "content-type": "application/json",
                     "accept":"text/event-stream"
                 },
                 method: "POST",
                 body: JSON.stringify({
-                    messages: [
-                        {
-                            "content": "入力された文字を英語で出力してください。",
-                            "role": "system"
-                        },
-                        {
-                            "content": "こんにちは、今日の天気は晴れ。気温は２０度になるでしょう。",
-                            "role": "user"
-                        }
-                    ]
+                    messages:messages
                 }),
             });
 
             const reader = res.body.getReader();
-
             const decoder = new TextDecoder();
-
+            var assistant_message = "";
             const read = async () => {
                 const { done, value } = await reader.read();
                 if (done) {
                     return;
                 }
-                console.log(decoder.decode(value));
+                assistant_message += decoder.decode(value).split('data:')[1].trim();
+                document.getElementById("assistant-temp-message").innerHTML = assistant_message;
                 return read();
             };
 
             await read();
             reader.releaseLock();
-        }
-        async function test() {
-            // http://localhost:7071/api/chatstreamへリクエストしてSSEを受信する
-            const res = await fetch("http://localhost:7071/api/test-stream", {
-                headers: {
-                    "content-type": "application/json",
-                    "accept":"text/event-stream"
-                },
-                method: "POST"
+            document.getElementById("assistant-temp-message").innerHTML = "";
+            messages.push({
+                "content": assistant_message.replace("[DONE]", ""),
+                "role": "assistant"
             });
+            updateHistory();
+        }
 
-            const reader = res.body.getReader();
-
-            const decoder = new TextDecoder();
-
-            const read = async () => {
-                const { done, value } = await reader.read();
-                if (done) {
-                    return;
+        function updateHistory(){
+            var html = "";
+            messages.forEach(element => {
+                if (element.role == "user") {
+                    // userには青のboarderを付ける
+                    html += "<div style='background-color:#0CB7E8; padding:5px; margin-bottom:5px'>You:" + element.content + "</div>";
+                } else if(element.role == "assistant") {
+                    html += "<div style='background-color:#0CE887; padding:5px; margin-bottom:5px'>Assistant:" + element.content + "</div>";
+                } else {
+                    html += "<div style='background-color:#BFBFBF; padding:5px; margin-bottom:5px'>System:" + element.content + "</div>";
                 }
-                console.log(decoder.decode(value));
-                return read();
-            };
-
-            await read();
-            reader.releaseLock();
+                
+            });
+            document.getElementById("chat-history").innerHTML = html;
         }
     </script>
 </body>

@@ -26,6 +26,7 @@ namespace AoaiStreamFunction
             string dataformat = "data: {0}\r\n\r\n";
             for (int i = 0; i < returnMsg.Length; i++)
             {
+                log.LogInformation(string.Format(dataformat, returnMsg[i]));
                 await response.WriteAsync(string.Format(dataformat, returnMsg[i]));
                 await response.Body.FlushAsync();
                 await Task.Delay(1000);
