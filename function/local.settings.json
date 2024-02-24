@@ -3,8 +3,8 @@
   "Values": {
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "FUNCTIONS_WORKER_RUNTIME": "dotnet",
-    "OpenAIEndpoint":"https://jp12-gpt4.openai.azure.com",
-    "OpenAIOptions__DeployName":"gpt-3"
+    "OpenAIEndpoint":"https://{your-env}.openai.azure.com",
+    "OpenAIOptions__DeployName":"{your-deploy}"
   },
   "Host": {
     "LocalHttpPort": 7071,
