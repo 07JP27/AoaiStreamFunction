@@ -21,7 +21,7 @@ var host = new HostBuilder()
         services.AddAzureClients(clientBuilder =>
         {
             clientBuilder.AddOpenAIClient(new Uri(hostContext.Configuration.GetValue<string>("OpenAIEndpoint")));
-            clientBuilder.UseCredential(new AzureCliCredential());
+            clientBuilder.UseCredential(new DefaultAzureCredential());
         });
 
     })
