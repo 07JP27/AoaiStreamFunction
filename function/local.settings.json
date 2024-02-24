@@ -2,9 +2,9 @@
   "IsEncrypted": false,
   "Values": {
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
-    "FUNCTIONS_WORKER_RUNTIME": "dotnet",
-    "OpenAIEndpoint":"https://{your-env}.openai.azure.com",
-    "OpenAIOptions__DeployName":"{your-deploy-name}"
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+    "OpenAIEndpoint": "https://{your-env}.openai.azure.com",
+    "OpenAIOptions__DeployName": "{your-deploy-name}"
   },
   "Host": {
     "CORS": "*"
