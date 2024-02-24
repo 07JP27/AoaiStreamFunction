@@ -1,26 +1,22 @@
-using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using Azure.AI.OpenAI;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.Functions.Worker;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.Linq;
-using System.Collections.Generic;
 using Microsoft.Net.Http.Headers;
+using Newtonsoft.Json;
 
 namespace AoaiStreamFunction
 {
-    public class Chatstream(OpenAIClient client, IOptions<OpenAIOptions> options)
+    public class Chatstream(OpenAIClient client, IOptions<OpenAIOptions> options, ILogger<Chatstream> _logger)
     {
-        [FunctionName("chat-stream")]
+        [Function("chat-stream")]
         public async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequest req,
-            ILogger log)
+            [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequest req)
         {
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
             var data = JsonConvert.DeserializeObject<ChatHistory>(requestBody);
@@ -30,14 +26,15 @@ namespace AoaiStreamFunction
             );
 
             var response = req.HttpContext.Response;
-            response.Headers.Add(HeaderNames.ContentType, "text/event-stream");
-            response.Headers.Add(HeaderNames.CacheControl, CacheControlHeaderValue.NoCacheString);
+            response.Headers.Append(HeaderNames.ContentType, "text/event-stream");
+            response.Headers.Append(HeaderNames.CacheControl, CacheControlHeaderValue.NoCacheString);
             string dataformat = "data: {0}\r\n\r\n";
             await foreach (StreamingChatCompletionsUpdate chatUpdate in await client.GetChatCompletionsStreamingAsync(chatOptions))
             {
-                log.LogInformation(chatUpdate.ContentUpdate);
+                _logger.LogInformation(chatUpdate.ContentUpdate);
                 await response.WriteAsync(string.Format(dataformat, chatUpdate.ContentUpdate));
                 await response.Body.FlushAsync();
+                await Task.Delay(10);
             }
 
             await response.WriteAsync(string.Format(dataformat, "[DONE]"));
