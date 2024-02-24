@@ -26,7 +26,7 @@ namespace AoaiStreamFunction
             var data = JsonConvert.DeserializeObject<ChatHistory>(requestBody);
             var chatOptions = new ChatCompletionsOptions(
                 options.Value.DeployName, 
-                ConvertToChatRequestMessage(data)
+                this.ConvertToChatRequestMessage(data)
             );
 
             var response = req.HttpContext.Response;
@@ -40,8 +40,7 @@ namespace AoaiStreamFunction
                 await response.Body.FlushAsync();
             }
 
-            await response.WriteAsync("event: finish\r\n");
-            await response.WriteAsync(string.Format(dataformat, string.Empty));
+            await response.WriteAsync(string.Format(dataformat, "[DONE]"));
             await response.Body.FlushAsync();
             return new EmptyResult();
         }
