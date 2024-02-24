@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "aoai_stream_function": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 7221",
+      "launchBrowser": false
+    }
+  }
+}
