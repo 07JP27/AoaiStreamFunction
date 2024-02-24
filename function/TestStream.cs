@@ -25,7 +25,7 @@ namespace AoaiStreamFunction
                 _logger.LogInformation(string.Format(dataformat, returnMsg[i]));
                 await response.WriteAsync(string.Format(dataformat, returnMsg[i]));
                 await response.Body.FlushAsync();
-                await Task.Delay(1000);
+                await Task.Yield();
             }
 
             await response.WriteAsync("event: finish\r\n");
